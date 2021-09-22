@@ -45,21 +45,18 @@ def build(path, output_path, data=None, render=None, remove=None):
 def _build(path, output_path, data, render, remove, root_path):
     local_data = get_sublate_data(path)
 
-    if "path" in local_data["sublate"]:
-        if local_data["sublate"]["path"] in [".", "./"]:
-            root_path = path
-        else:
-            path = os.path.join(path, local_data["sublate"]["path"])
+    if "path" in local_data:
+        path = os.path.join(path, local_data["path"])
 
-    if "output" in local_data["sublate"]:
-        if local_data["sublate"]["output"][0] == "/":
-            output_path = local_data["sublate"]["output"]
+    if "output" in local_data:
+        if local_data["output"][0] == "/":
+            output_path = local_data["output"]
         else:
-            output_path = os.path.join(path, local_data["sublate"]["output"])
+            output_path = os.path.join(path, local_data["output"])
 
-    if "data" in local_data["sublate"]:
-        if type(local_data["sublate"]["data"]) is list:
-            for d in local_data["sublate"]["data"]:
+    if "data" in local_data:
+        if type(local_data["data"]) is list:
+            for d in local_data["data"]:
                 if d[0] == "/":
                     data_path = d[0]
                 else:
@@ -67,24 +64,26 @@ def _build(path, output_path, data, render, remove, root_path):
 
                 data.update(get_project_data(data_path))
         else:
-            if local_data["sublate"]["data"][0] == "/":
-                data_path = local_data["sublate"]["data"][0]
+            if local_data["data"][0] == "/":
+                data_path = local_data["data"][0]
             else:
-                data_path = os.path.join(root_path, local_data["sublate"]["data"])
+                data_path = os.path.join(root_path, local_data["data"])
 
             data.update(get_project_data(data_path))
 
-    if "remove" in local_data["sublate"]:
-        if type(local_data["sublate"]["remove"]) is list:
-            remove = local_data["sublate"]["remove"]
+    if "remove" in local_data:
+        if type(local_data["remove"]) is list:
+            remove = local_data["remove"]
         else:
-            remove = [local_data["sublate"]["remove"]]
+            remove = [local_data["remove"]]
 
-    if "render" in local_data["sublate"]:
-        if type(local_data["sublate"]["render"]) is list:
-            render = local_data["sublate"]["render"]
+    if "render" in local_data:
+        if type(local_data["render"]) is list:
+            render = local_data["render"]
         else:
-            render = [local_data["sublate"]["render"]]
+            render = [local_data["render"]]
+
+        root_path = path
 
     if os.path.exists(output_path):
         shutil.rmtree(output_path)
@@ -92,12 +91,9 @@ def _build(path, output_path, data, render, remove, root_path):
     print(f"Building: {path}")
     os.mkdir(output_path)
 
-    if "path" in local_data["sublate"] and local_data["sublate"]["path"] not in [".", "./"]:
+    if "path" in local_data and local_data["path"] not in [".", "./"]:
         _build(path, output_path, data, render, remove, root_path)
         return
-
-    del local_data["sublate"]
-    data.update(local_data)
 
     # TODO: skip over data and output paths
     for filename in os.listdir(path):
@@ -154,9 +150,7 @@ def get_project_data(path):
 
 
 def get_sublate_data(path):
-    data = {
-        "sublate": {}
-    }
+    data = { }
 
     if os.path.isdir(path):
         for filename in os.listdir(path):
