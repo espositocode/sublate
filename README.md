@@ -11,16 +11,12 @@ Sublate works copying project files to an output directory and rendering the sel
 Start by creating `sublate.yaml` at the root of your project, with the location to your data and template files. For example, this project will render `index.html` with the data supplied from `data.json`:
 
 ```yaml
-sublate:
-  # path to data file(s)
-  # data will not be copied to the output directory
-  data: "/data.yaml"
+# path to data file(s)
+# data will not be copied to the output directory
+data: "/data.yaml"
 
-  # path to template file(s) that will be rendered
-  render: "/index.html"
-
-# data can also be defined directly in the sublate file
-message: "Hello, World!"
+# path to template file(s) that will be rendered
+render: "/index.html"
 ```
 
 To build, just run `sublate` from the project directory. This will create an `output` directory with all project files, including the rendered `index.html`.
