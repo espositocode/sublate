@@ -1,3 +1,5 @@
+# DEPRECATED
+
 Sublate (still in alpha development) is a tool for building template based projects with jinja. It can be used for blogs, scaffolds, [themes](https://github.com/subtheme-dev), or any kind of project that renders structured data. 
 
 To install:
