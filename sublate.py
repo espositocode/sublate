@@ -35,7 +35,10 @@ def run(path):
 
 
 def cp(source, target):
-    shutil.copytree(source, target) 
+    if os.path.isdir(source):
+        shutil.copytree(source, target) 
+    else:
+        shutil.copfile(source, target) 
 
 
 def mkdir(path):
@@ -43,20 +46,24 @@ def mkdir(path):
 
 
 def rm(path):
-    shutil.rmtree(path, ignore_errors=True)
+    if os.path.isdir(path):
+        shutil.rmtree(path, ignore_errors=True)
+    else:
+        os.remove(path)
 
 
 # template
 
 
 def render(path, template, template_data={}):
+    # TODO: support root path
     env = jinja2.Environment(loader=jinja2.ChoiceLoader([
-        jinja2.FileSystemLoader(searchpath="."),
         jinja2.FileSystemLoader(searchpath=".")
     ]))
 
     _template = env.get_template(template)
 
+    # TODO: merge global data
     output = _template.render(**template_data).strip()
     with open(path, 'w+') as f:
         f.write(output)
@@ -78,8 +85,9 @@ def load(path):
             name = filename.split(".")
             data[basename][name[0]] = _data
     else:
-        # TODO
+        # TODO: load data
         pass
+
 
 def _load_path(path):
     if path.endswith(".json"):

@@ -1,3 +1,3 @@
 # Sublate
 
-Sublate is a python library for building template projects.
+Sublate is a python library for building project templates.
