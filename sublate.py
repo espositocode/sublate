@@ -15,6 +15,9 @@ data = {}
 root = os.getcwd()
 
 
+_data = data
+
+
 def run(pathname):
     for path in glob.glob(pathname):
         if path.endswith(".py"):
@@ -43,19 +46,19 @@ def mkdir(path):
 def rm(path):
     if os.path.isdir(path):
         shutil.rmtree(path, ignore_errors=True)
-    else:
+    elif os.path.exists(path):
         os.remove(path)
 
 
-def render(path, template, template_data={}):
+def render(path, template=None, data={}):
     env = jinja2.Environment(loader=jinja2.ChoiceLoader([
         jinja2.FileSystemLoader(searchpath="."),
         jinja2.FileSystemLoader(searchpath=root)
     ]))
 
-    _template = env.get_template(template)
+    _template = env.get_template(template if template else path)
 
-    output = _template.render(**(data | template_data)).strip()
+    output = _template.render(**(_data | data)).strip()
     with open(path, 'w+') as f:
         f.write(output)
 
