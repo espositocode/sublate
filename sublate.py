@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
+import datetime
+import glob
 import json
 import os
 import shutil
+import subprocess
 import types
 
 import jinja2
@@ -9,29 +12,21 @@ import yaml
 
 
 data = {}
+root = os.getcwd()
 
 
-# python
+def run(pathname):
+    for path in glob.glob(pathname):
+        if path.endswith(".py"):
+            with open(path) as f:
+                module = types.ModuleType('module')
 
-
-def run(path):
-    with open(path) as f:
-        module = types.ModuleType('module')
-
-        cwd = os.getcwd()
-        os.chdir(os.path.dirname(path))
-        exec(f.read(), module.__dict__)
-        os.chdir(cwd)
-
-        data = {}
-        for k, v in module.__dict__.items():
-            if k[:2] != "__" and k.isupper():
-                data[k.lower()] = v
-
-        return data
-
-
-# shell
+                cwd = os.getcwd()
+                os.chdir(os.path.dirname(path))
+                exec(f.read(), module.__dict__)
+                os.chdir(cwd)
+        else:
+            subprocess.run([path])
 
 
 def cp(source, target):
@@ -52,56 +47,31 @@ def rm(path):
         os.remove(path)
 
 
-# template
-
-
 def render(path, template, template_data={}):
-    # TODO: support root path
     env = jinja2.Environment(loader=jinja2.ChoiceLoader([
-        jinja2.FileSystemLoader(searchpath=".")
+        jinja2.FileSystemLoader(searchpath="."),
+        jinja2.FileSystemLoader(searchpath=root)
     ]))
 
     _template = env.get_template(template)
 
-    # TODO: merge global data
-    output = _template.render(**template_data).strip()
+    output = _template.render(**(data | template_data)).strip()
     with open(path, 'w+') as f:
         f.write(output)
 
 
-# data
+def read(pathname):
+    _data = {}
+    for path in glob.glob(pathname):
+        with open(path) as f:
+            if path.endswith(".json"):
+                _data[path] = json.loads(f.read())
 
-
-def load(path):
-    basename = os.path.basename(path)
-
-    if os.path.isdir(path):
-        for filename in os.listdir(path):
-            _data = _load_path(os.path.join(path, filename))
+            if path.endswith(".yaml"):
+                _data[path] = yaml.load(f.read(), Loader=yaml.FullLoader)
     
-            if basename not in data:
-                data[basename] = {}
-
-            name = filename.split(".")
-            data[basename][name[0]] = _data
-    else:
-        # TODO: load data
-        pass
+    return _data
 
 
-def _load_path(path):
-    if path.endswith(".json"):
-        return _load_json(path)
-
-    if path.endswith(".yaml"):
-        return _load_yaml(path)
-
-
-def _load_json(path):
-    with open(path) as f:
-        return json.loads(f.read())
-
-
-def _load_yaml(path):
-    with open(path) as f:
-        return yaml.load(f.read(), Loader=yaml.FullLoader)
+def date_iso():
+    return datetime.datetime.now().isoformat()
